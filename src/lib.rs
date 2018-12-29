@@ -3,16 +3,18 @@ use std::fs;
 use std::fs::DirEntry;
 use std::path::{Path, PathBuf};
 
-pub struct File {
+
+#[derive(Clone)]
+pub struct FileData {
     pub filename: String,
     pub contents: String,
     pub path: PathBuf,
 }
 
-pub fn read_files(from: &str, with_ext: &str) -> Result<Vec<File>, Error> {
+pub fn read_files(from: &str, with_ext: &str) -> Result<Vec<FileData>, Error> {
     let path = Path::new(from);
     let dir_entries = fs::read_dir(path)?;
-    let mut file_data: Vec<File> = Vec::new();
+    let mut file_data: Vec<FileData> = Vec::new();
 
     for entry_result in dir_entries {
         if let Ok(entry) = entry_result {
@@ -31,7 +33,7 @@ pub fn read_files(from: &str, with_ext: &str) -> Result<Vec<File>, Error> {
     Ok(file_data)
 }
 
-pub fn write_files(file_data: Vec<File>) -> Vec<Result<String, (String, Error)>> {
+pub fn write_files(file_data: Vec<FileData>) -> Vec<Result<String, (String, Error)>> {
     let mut results = Vec::new();
     for file in file_data {
         results.push(match fs::write(file.path, file.contents) {
@@ -42,7 +44,7 @@ pub fn write_files(file_data: Vec<File>) -> Vec<Result<String, (String, Error)>>
     results
 }
 
-fn process_entry(entry: DirEntry) -> Result<File, Error> {
+fn process_entry(entry: DirEntry) -> Result<FileData, Error> {
     let file_type = entry.file_type()?;
     if file_type.is_file() {
         // gather data in the formats we want
@@ -50,7 +52,7 @@ fn process_entry(entry: DirEntry) -> Result<File, Error> {
         let file_contents = fs::read_to_string(entry.path())?;
 
         // build File struct
-        return Ok(File {
+        return Ok(FileData {
             filename: file_name,
             contents: file_contents,
             path: entry.path(),
