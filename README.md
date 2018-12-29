@@ -50,6 +50,6 @@ fn main() {
 
 fn change_file_contents(file: FileData) -> FileData {
     let new_contents = String::from("Some data");
-    File { contents: new_contents, ..file}
+    FileData { contents: new_contents, ..file}
 }
 ```
